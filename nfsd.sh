@@ -49,7 +49,7 @@ if [ -z "${PERMITTED}" ]; then
 else
   echo "The PERMITTED environment variable is set."
   echo "The permitted clients are: ${PERMITTED}."
-  /bin/sed -i "s/{{PERMITTED}}/"${PERMITTED}"/g" /etc/exports
+  /bin/sed -i "s#{{PERMITTED}}#"${PERMITTED}"#g" /etc/exports # delimiter changed to # to allow CIDR notation
 fi
 
 # Check if the READ_ONLY variable is set (rather than a null string) using parameter expansion
