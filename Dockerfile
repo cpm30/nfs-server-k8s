@@ -1,16 +1,17 @@
-FROM centos:7.8.2003
+FROM alpine:latest
+LABEL maintainer "Chris Montague <cmontague@databank.com"
+COPY Dockerfile README.md /
 
-LABEL Chris Montague <cmontague@databank.com>
+RUN apk add --no-cache --update --verbose nfs-utils bash iproute2 && \
+    rm -rf /var/cache/apk /tmp /sbin/halt /sbin/poweroff /sbin/reboot && \
+    mkdir -p /var/lib/nfs/rpc_pipefs /var/lib/nfs/v4recovery && \
+    echo "rpc_pipefs    /var/lib/nfs/rpc_pipefs rpc_pipefs      defaults        0       0" >> /etc/fstab && \
+    echo "nfsd  /proc/fs/nfsd   nfsd    defaults        0       0" >> /etc/fstab
 
-ENV container=docker
+COPY exports /etc/
+COPY nfsd.sh /usr/bin/nfsd.sh
+COPY .bashrc /root/.bashrc
 
-RUN rpmkeys --import file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7 && \
-    yum -y --setopt=tsflags=nodocs install nfs-utils && \
-    mkdir -p /exports && \
-    yum clean all
-COPY run-mountd.sh /
+RUN chmod +x /usr/bin/nfsd.sh
 
-VOLUME ["/exports"]
-EXPOSE 111/udp 2049/tcp
-
-ENTRYPOINT ["/run-mountd.sh"]
+ENTRYPOINT ["/usr/bin/nfsd.sh"]
